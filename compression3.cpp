@@ -114,7 +114,7 @@ class heapClass{
 		nodeClass nodes[128];
 	public:
 		heapClass(unsigned int);
-		void insert(nodeClass);
+		void insert(nodeClass &);
 		nodeClass getNode(unsigned int);
 		bool isOne();
 		void sortSubTree(unsigned int);
@@ -134,13 +134,17 @@ heapClass::heapClass(unsigned int _capacity){
 	}
 }
 
-void heapClass::insert(nodeClass _node){
-	nodes[size].setAscii(_node.getAscii());
-	nodes[size].setFrequency(_node.getFrequency());
-	nodes[size].setLeft(_node.getLeft());
-	nodes[size].setRight(_node.getRight());
-	size++;
-	sort();
+void heapClass::insert(nodeClass &_node){
+	if(_node.getAscii() <= 128 && _node.getAscii() >= 0 && _node.getFrequency() > 0){
+		nodes[size].setAscii(_node.getAscii());
+		nodes[size].setFrequency(_node.getFrequency());
+		nodes[size].setLeft(_node.getLeft());
+		nodes[size].setRight(_node.getRight());
+		size++;
+		sort();
+	}else{
+		cout << "Error: heapClass::insert()" << endl;
+	}
 }
 
 nodeClass heapClass::getNode(unsigned int _index){
@@ -327,10 +331,11 @@ void huffmanClass::insert2(heapClass _heap){
 		nodeClass a(0,0);
 		nodeClass b(0,0);
 		a = _heap.extract();
+		cout << "Extracting " << a.getAscii() << " with frequecny " << a.getFrequency() << " Loc: " << &a << endl;
 		b = _heap.extract();
+		cout << "Extracting " << b.getAscii() << " with frequecny " << b.getFrequency() << " Loc: " << &b << endl;
 		
-		nodeClass newRoot(128, a.getFrequency() + b.getFrequency());
-		
+		nodeClass newRoot(128, a.getFrequency() + b.getFrequency());		
 		if(a.getAscii() != 128){
 			a.setLeft(nullptr);
 			a.setRight(nullptr);
@@ -341,11 +346,12 @@ void huffmanClass::insert2(heapClass _heap){
 		}
 		newRoot.setLeft(&a);
 		newRoot.setRight(&b);
+		cout << "NewNode " << newRoot.getAscii() << " with frequecny " << newRoot.getFrequency() << " Loc: " << &newRoot << " Left Loc: " << newRoot.getLeft() << " Right Loc: " << newRoot.getRight() << endl;
 		root = &newRoot;
 		_heap.insert(newRoot);
-		cout << "[" << (char) a.getAscii() << "," << a.getFrequency() << "," << &a << "," << a.getLeft() << "," << a.getRight() << "] + ";
-		cout << "[" << (char) b.getAscii() << "," << b.getFrequency() << "," << &b << "," << b.getLeft() << "," << b.getRight() << "] = ";
-		cout << "[" << (char) newRoot.getAscii() << "," << newRoot.getFrequency() << "," << &newRoot << "," << newRoot.getLeft() << "," << newRoot.getRight() << "]" << endl;
+		//cout << "[" << (char) a.getAscii() << "," << a.getFrequency() << "," << &a << "," << a.getLeft() << "," << a.getRight() << "] + ";
+		//cout << "[" << (char) b.getAscii() << "," << b.getFrequency() << "," << &b << "," << b.getLeft() << "," << b.getRight() << "] = ";
+		//cout << "[" << (char) newRoot.getAscii() << "," << newRoot.getFrequency() << "," << &newRoot << "," << newRoot.getLeft() << "," << newRoot.getRight() << "]" << endl;
 		insert2(_heap);
 	}
 }
@@ -378,20 +384,28 @@ void huffmanClass::print1DArray(int * _array, int _index){
 }
 
 void huffmanClass::createCodes(nodeClass * root, int * _code, int index){
+	//cout << "createCodes -> " << root << " -> index: " << index << endl;
 	if(root->getLeft() != nullptr){
+		//cout << "in left" << endl;
+		//cout << root->getLeft()->getAscii() << "frequency: " << root->getLeft()->getFrequency() << endl;
 		_code[index] = 0;
 		createCodes(root->getLeft(), _code, index + 1);
 	}
 	if(root->getRight() != nullptr){
+		//cout << "in Right" << endl;
 		_code[index] = 1;
 		createCodes(root->getRight(), _code, index + 1);
 	}
 	if(root->leaf()){
-		cout /*<< (char) root->getAscii()*/ << "(" << root->getAscii() << ")" << " = ";
-		print1DArray(_code, index);
-		cout << endl;
-		for(int i = 0; i < index; i++)
-			codes[root->getAscii()][i] = _code[i];
+		if(root){
+			cout << (char) root->getAscii() << "(" << root->getAscii() << ")" << " = ";
+			print1DArray(_code, index);
+			cout << endl;
+			for(int i = 0; i < index; i++){
+				//cout << "index: " << index << "||| ascii: " << root->getAscii() << endl;
+				codes[root->getAscii()][i] = _code[i];
+			}
+		}
 	}
 }
 
@@ -413,7 +427,8 @@ int main(int argc, char *argv[]){
 	root = huffman.getRoot();
 	int arr[100];
 	huffman.createCodes(root, arr ,0);
-	cout << root->getFrequency() << endl;
+	//huffman.inOrderTrav(root);
+	//cout << root->getFrequency() << endl;
 	//huffman.inOrderTrav(root);
 	//heap.setPtr(0);
 	return 0;
