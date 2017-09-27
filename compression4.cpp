@@ -215,13 +215,49 @@ void read(heapClass * _heap, string _file){
 	}
 }
 
+char intToChar(int _input){
+	if(_input == 1)
+		return '1';
+	if(_input == 0);
+		return '0';
+}
+
+int charToInt(char _input){
+	if(_input == '1')
+		return 1;
+	if(_input == '0')
+		return 0;
+}
+
+string encodeText(string _file, huffmanClass * _tree){
+	char c;
+	string strCodes[128];
+	string eText = "";
+	for(int i = 0; i < 128; i++)
+		strCodes[i] = "";
+	for(int i = 0; i < 128; i++){
+		for(int j = 0; j < 50; j++){
+			if(_tree->codes[i][j] != 2)
+				strCodes[i] += intToChar(_tree->codes[i][j]);
+		}
+	}
+	ifstream in;
+	in.open(_file);
+	while(in.get(c)){
+		eText += strCodes[(int) c];
+	}
+	return eText;
+}
+
 void compressFile(string _file, int _entries, huffmanClass * _tree){
 	string newFile = _file + ".mcp";
 	ofstream out;
 	out.open(newFile, ofstream::out | ofstream::binary);
 	bitset<32> magicNum(0x1AF69384);
+	//int test = 452367236;
 	bitset<32> silence(0x00000000);
 	out.write(magicNum.to_string().c_str(), 32);
+	//out.write((char*)&test, sizeof(test));
 	out.write(silence.to_string().c_str(), 32);
 	int nameSize = _file.length();
 	int modSize = nameSize;
@@ -257,12 +293,16 @@ void compressFile(string _file, int _entries, huffmanClass * _tree){
 			out.write(eLength.to_string().c_str(), 8);
 			char array[1];
 			for(int q = 0; q < encodeLength; q++){
-				array[1] = (char) _tree->codes[i][q];
+				array[0] =  intToChar(_tree->codes[i][q]);
 				out.write(array, 1);
 			}
 			encodeLength = 0;
 		}
 	}
+	string eText = encodeText(_file, _tree);
+	bitset<32> eTextLen(eText.length());
+	out.write(eTextLen.to_string().c_str(), 32);
+	out.write(eText.c_str(), eText.length());
 }
 
 int binaryToInt(string _binary, int _size){
@@ -309,6 +349,13 @@ void readCompressed(string _file){
 	char entriesLen[8];
 	in.read(entriesLen, 8);
 	cout << "Entries: " << binaryToInt(entriesLen, 8) << endl;
+	int codes[128][50];
+	int codeLen[128];
+	for(int i = 0; i < 128; i++)
+		codeLen[i] = 0;
+	for(int i = 0; i < 128; i++)
+		for(int j = 0; j < 50; j++)
+			codes[i][j] = 2;
 	for(int i = 0; i < binaryToInt(entriesLen, 8); i++){
 		char ascii[8];
 		in.read(ascii, 8);
@@ -319,9 +366,60 @@ void readCompressed(string _file){
 		for(int j = 0; j < binaryToInt(len, 8); j++){
 			char c[1];
 			in.read(c, 1);
+			codes[binaryToInt(ascii, 8)][j] = charToInt(c[0]);
+			codeLen[binaryToInt(ascii, 8)]++;
 			cout << binaryToInt(c, 1);
 		}
 		cout << endl;
+	}
+	cout << "Bits in Encoded Text: ";
+	char bitLen[32];
+	in.read(bitLen, 32);
+	int bitLenInt = binaryToInt(bitLen, 32);
+	cout << bitLenInt << endl;
+	cout << "Text Decoded: ";
+	char current[1];
+	int patCount = 0;
+	char pattern[50];
+	for(int i = 0; i < 50; i++)
+		pattern[i] = '3';
+	bool mismatch = true;
+	bool wrong = false;
+	int numOfMatch = 0;
+	for(int i = 0; i < bitLenInt; i++){
+		in.read(current, 1);
+		pattern[patCount] = current[0];
+		patCount++;
+		for(int j = 0; j < 128; j++){
+			if(codes[j][0] != 2){
+				//cout << "####" << (char) j << "####" << endl;
+				//cout << "Pattern: ";
+				wrong = false;
+				for(int q = 0; q < patCount && !wrong; q++){
+					//cout << pattern[q];
+					if(pattern[q] == intToChar(codes[j][q])){
+						//cout << "match" << endl;
+						mismatch = false;
+						numOfMatch++;
+					}
+					else{
+						//cout << "mismatch" << endl;
+						mismatch = true;
+						wrong = true;
+					}
+				}
+				//cout << " Number of match: " << numOfMatch << endl;
+				if(numOfMatch == codeLen[j] && !mismatch && codeLen[j] != 0){
+					//cout << "numOfMatch: " << numOfMatch << " = " << " codeLen[" << j << "]: " << codeLen[j] << " && mismatch: " << mismatch << " && codeLen[" << j << "]: " << codeLen[j] << " !=  0" << endl; 
+					cout << (char)j;
+					patCount = 0;
+					j = 128;
+					mismatch = false;
+					
+				}
+				numOfMatch = 0;
+			}
+		}
 	}
 }
 	
