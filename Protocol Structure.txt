@@ -1,9 +1,7 @@
 file protocol (mpc)
 4 bytes - magic number
-4 bytes - silence
 1 byte - name Length
 ? bytes - file name
-4 bytes -silence
 1 bytes - # of entries
 ? bytes - table
 	1 byte - ascii value
