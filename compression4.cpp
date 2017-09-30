@@ -313,7 +313,7 @@ void writeBinary(string _binary, int _count, ofstream & _out){
 	_binary += em.to_string();
 	_out.write(c, 1);
 	//_out.write(b, 8);
-	//cout << "(" << _count << ")bitStream: " << _binary << endl;
+	cout << "(" << _count << ")bitStream: " << _binary << endl;
 }
 
 void compressFile(string _file, int _entries, huffmanClass * _tree){
@@ -322,7 +322,6 @@ void compressFile(string _file, int _entries, huffmanClass * _tree){
 	int bitCount = 0;
 	
 	//Write Magic Number of 0x1AF69384
-	//char bit32[4];
 	string newFile = _file + ".mcp";
 	ofstream out;
 	out.open(newFile, ofstream::out | ofstream::binary);
@@ -332,24 +331,7 @@ void compressFile(string _file, int _entries, huffmanClass * _tree){
 	bitStream += magicNum.to_string();
 	bitCount += bitStream.size();
 	//cout << "(" << bitCount << ")bitStream: " << bitStream << endl;
-	
-	/*
-	bitset<8> mn1(0x1A);
-	bitset<8> mn2(0xF6);
-	bitset<8> mn3(0x93);
-	bitset<8> mn4(0x84);
-	bit32[0] = (char) mn1.to_ulong();
-	bit32[1] = (char) mn2.to_ulong();
-	bit32[2] = (char) mn3.to_ulong();
-	bit32[3] = (char) mn4.to_ulong();
-	//int test = 452367236;
-	//bitset<32> silence(0x00000000);
-	out.write(bit32, 4);
-	*/
-	
-	//Write the length of the file name in 8 bits to proceeds
-	//out.write((char*)&test, sizeof(test));
-	//out.write(silence.to_string().c_str(), 32);
+
 	int nameSize = _file.length();
 	int modSize = nameSize;
 	if(nameSize % 4 != 0){
@@ -359,14 +341,7 @@ void compressFile(string _file, int _entries, huffmanClass * _tree){
 	bitset<8> nameSizeByte(nameSize);
 	bitStream += nameSizeByte.to_string();
 	bitCount += nameSizeByte.size();
-	//cout << "(" << bitCount << ")bitStream: " << bitStream << endl;
-	/*char nsb[1];
-	nsb[0] = (char) nameSizeByte.to_ulong();
-	out.write(nsb, 1);
-	
-	//Write the file name
-	char c[1];
-	*/
+
 	for(int i = 0; i < modSize; i++){
 		if(i < nameSize){
 			bitset<8> current((int) _file[i]);
@@ -390,9 +365,7 @@ void compressFile(string _file, int _entries, huffmanClass * _tree){
 	bitset<8> bit8(_entries);
 	bitStream += bit8.to_string();
 	bitCount += bit8.size();
-	//cout << "(" << bitCount << ")bitStream: " << bitStream << endl;
-	//c[0] = (char) bit8.to_ulong();
-	//out.write(c, 1);
+
 	
 	//Write the codes table
 	int encodeLength = 0;
@@ -404,15 +377,7 @@ void compressFile(string _file, int _entries, huffmanClass * _tree){
 			bitset<8> ascii(i);
 			bitStream += ascii.to_string();
 			bitCount += ascii.size();
-			//cout << "For " << i << " writing: ";
-			//for(int t = 0; t < 8; t++){
-				//writeBit(out, bitBuffer, bitBufferCt, ascii[t]);
-				//cout << ascii[t];
-			//}
-			//cout << endl;
-			//bitset<8> ascii(i);
-			//c[0] = (char) ascii.to_ulong();
-			//out.write(c, 1);
+
 			for(int j = 0; j < 50; j++){
 				if(_tree->codes[i][j] != 2){
 					encodeLength++;
@@ -421,12 +386,7 @@ void compressFile(string _file, int _entries, huffmanClass * _tree){
 			bitset<8> eLength(encodeLength);
 			bitStream += eLength.to_string();
 			bitCount += eLength.size();
-			//for(int z = 0; z < 8; z++){
-				//writeBit(out, bitBuffer, bitBufferCt, eLength[z]);
-			//}
-			//c[0] = eLength.to_ulong();
-			//out.write(c, 1);
-			//char array[1];
+
 			
 			bitset<1> oneBit;
 			for(int q = 0; q < encodeLength; q++){
@@ -436,8 +396,6 @@ void compressFile(string _file, int _entries, huffmanClass * _tree){
 					//writeBit(out, bitBuffer, bitBufferCt, _tree->codes[i][q]);
 			}
 			//cout << "(" << bitCount << ")bitStream: " << bitStream << endl;
-				//array[0] =  intToChar(_tree->codes[i][q]);
-				//out.write(array, 1);
 			encodeLength = 0;
 		}
 	}
@@ -454,67 +412,6 @@ void compressFile(string _file, int _entries, huffmanClass * _tree){
 	//cout << "eText: " << eText << endl;
 	//cout << "(" << bitStream.length() << ")bitStream: " << bitStream << endl;
 	writeBinary(bitStream, bitCount, out);
-	//for(int r = 0; r < 32; r++){
-		//if(eLength[r] == 1){
-			//bitset<1> one;
-			//one.set();
-			//if(bitBufferCt == 8){
-				//for(int r = 0; r < 8; r++){
-					//buffer[r] = bitBuffer[r];
-				//}
-				//c[0] = (char) buffer.to_ulong();
-				//out.write(c, 1);
-				//bitBufferCt = 0;
-			//}
-			//bitBuffer[bitBufferCt] = one[0];
-			//bitBufferCt++;
-		//}else if(eLength[r] == 0){
-			//bitset<1> zero;
-			//zero.reset();
-			//if(bitBufferCt == 8){
-			//	for(int r = 0; r < 8; r++){
-				//	buffer[r] = bitBuffer[r];
-			//	}
-			//	c[0] = (char) buffer.to_ulong();
-			//	out.write(c, 1);
-			//	bitBufferCt = 0;
-			//}
-			//bitBuffer[bitBufferCt] = zero[0];
-			//bitBufferCt++;
-		//}
-	//}
-	/*for(int r = 0; r < eText.length(); r++){
-		if(eText[r] == '1'){
-			bitset<1> one;
-			one.set();
-			if(bitBufferCt == 8){
-				for(int r = 0; r < 8; r++){
-					buffer[r] = bitBuffer[r];
-				}
-				c[0] = (char) buffer.to_ulong();
-				out.write(c, 1);
-				bitBufferCt = 0;
-			}
-			bitBuffer[bitBufferCt] = one[0];
-			bitBufferCt++;
-		}else if(eText[r] == '0'){
-			bitset<1> zero;
-			zero.reset();
-			if(bitBufferCt == 8){
-				for(int r = 0; r < 8; r++){
-					buffer[r] = bitBuffer[r];
-				}
-				c[0] = (char) buffer.to_ulong();
-				out.write(c, 1);
-				bitBufferCt = 0;
-			}
-			bitBuffer[bitBufferCt] = zero[0];
-			bitBufferCt++;
-		}
-	}
-	//bitset<32> eTextLen(eText.length());
-	//out.write(eTextLen.to_string().c_str(), 32);
-	//out.write(eText.c_str(), eText.length());*/
 }
 
 int binaryToInt(string _binary, int _size){
@@ -542,65 +439,34 @@ void readCompressed(string _file){
 	int index = 0;
 	int size = 0;
 	while(in.get(ch)){
-		if(ch != (char)em){
 			bitset<8> current((int) ch);
 			binary += current.to_string();
 			count += 8;
-		}
 	}
 	size = binary.length();
 	
 	cout << endl << endl << "(" << count << ")Read String: " << binary << endl << endl;
 	
 	//Read Magic Number 
-			//~ char mn[4];
-			//~ in.read(mn, 4);
-			//~ string mnS(mn);
-			//~ cout << "Magic Number: ";
-			//~ string bStr = "";
-			//~ for(int i = 0; i < 4; i++){
-				//~ bitset<8> bits((int) mn[i]);
-				//~ bStr += bits.to_string();
-			//~ }
-			//~ cout << binaryToInt(bStr, 32) << endl;
 			
 	cout << "Read Magic Number: " << binaryToInt(binary.substr(0, 32), 32) << endl;
 	index += 32;
 	
 	
 	//Read file name length
-	//char silence[32];
-	//in.read(silence, 32);
-				//~ char fns[1];
-				//~ in.read(fns, 1);
-				//~ bitset<8> fnsB((int) fns[0]);
-				//~ //string fileNameSizeStr(fileNameSize);
-				//~ int nameSize = binaryToInt(fnsB.to_string(), 8);
-				//~ int modSize = nameSize;
-				//~ cout << "File Name Length: " << nameSize << endl;
-				//~ if(nameSize % 4 != 0){
-					//~ int diff = 4 - (nameSize % 4);
-					//~ modSize += diff;
-				//~ }
-				//~ cout << "File Name Mod Length: " << modSize << endl;
+
 	int fnl = binaryToInt(binary.substr(index, 8), 8);
 	cout << "Read File Name Length: " << fnl << endl;
+	int modSize = fnl;
+	if(fnl % 4 != 0){
+		int diff = 4 - (fnl % 4);
+		modSize += diff;
+	}
+	fnl = modSize;
 	index += 8;
+	cout << "Read File Name Mod Length: " << fnl << endl;
 	
 	//Read file name
-					//~ char c[0];
-					//~ cout << "Filename: ";
-					//~ string fileName = "";
-					//~ for(int i = 0; i < modSize; i++){
-						//~ in.read(c, 1);
-						//~ if(i < nameSize){
-							//~ bitset<8> fn((int) c[0]);
-							//~ fileName += (char) binaryToInt(fn.to_string(), 8);
-						//~ }
-					//~ }
-					//~ cout << fileName << endl;
-					//~ //in.read(silence, 32);
-	
 	cout << "Read File Name: ";
 	for(int i = 0; i < fnl; i++){
 		cout << (char) binaryToInt(binary.substr(index, 8), 8);
@@ -610,11 +476,6 @@ void readCompressed(string _file){
 	
 	
 	//Read Entries Length
-					//~ //char entriesLen[8];
-					//~ in.read(c, 8);
-					//~ bitset<8> entLen((int) c[0]);
-					//~ int entriesLength = binaryToInt(entLen.to_string(), 8);
-					//~ cout << "Entries: " << entriesLength << endl;
 	int el = binaryToInt(binary.substr(index, 8), 8);
 	index += 8;
 	cout << "Read Entries Length: " << el << endl;
@@ -655,35 +516,6 @@ void readCompressed(string _file){
 			//~ }
 		//~ }
 	//~ }
-	
-					//~ int codes[128][50];
-					//~ int codeLen[128];
-					//~ for(int i = 0; i < 128; i++)
-						//~ codeLen[i] = 0;
-					//~ for(int i = 0; i < 128; i++)
-						//~ for(int j = 0; j < 50; j++)
-							//~ codes[i][j] = 2;
-					//~ for(int i = 0; i < binaryToInt(entLen.to_string(), 8); i++){
-						//~ char ascii[8];
-						//~ in.read(ascii, 8);
-						//~ cout << "Ascii Value: " << binaryToInt(ascii, 8);
-						//~ char len[8];
-						//~ in.read(len, 8);
-						//~ cout << " Number of Bits: " << binaryToInt(len, 8) << " Code: ";
-						//~ for(int j = 0; j < binaryToInt(len, 8); j++){
-							//~ char c[1];
-							//~ in.read(c, 1);
-							//~ codes[binaryToInt(ascii, 8)][j] = charToInt(c[0]);
-							//~ codeLen[binaryToInt(ascii, 8)]++;
-							//~ cout << binaryToInt(c, 1);
-						//~ }
-						//~ cout << endl;
-					//~ }
-					//~ cout << "Bits in Encoded Text: ";
-					//~ char bitLen[32];
-					//~ in.read(bitLen, 32);
-					//~ int bitLenInt = binaryToInt(bitLen, 32);
-					//~ cout << bitLenInt << endl;
 					cout << "Text Decoded: ";
 					char current[1];
 					int patCount = 0;
@@ -722,7 +554,6 @@ void readCompressed(string _file){
 									patCount = 0;
 									j = 128;
 									mismatch = false;
-									cout << "(" << i << ")";
 								}
 								numOfMatch = 0;
 							}
@@ -741,7 +572,7 @@ int main(int argc, char *argv[]){
 	tree->create(heap);
 	tree->createCodes(tree->root, array, 0);
 	//cout << tree->leaves << endl;
-	tree->printCodes();
+	//tree->printCodes();
 	compressFile(argv[1], tree->leaves, tree);
 	string filename(argv[1]);
 	filename += ".mcp";

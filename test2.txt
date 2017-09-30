@@ -1,1 +1,2 @@
-the cat 
+abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVYZ 0123456789
+!@#$%^&*()_+-=,./;'[]\{}|:"><?W
