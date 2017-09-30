@@ -4,6 +4,7 @@
 #include <vector>
 #include <bitset>
 #include <cmath>
+#include <iomanip>
 
 using namespace std;
 
@@ -426,6 +427,17 @@ int binaryToInt(string _binary, int _size){
 	return rVal;
 }
 
+void writeToFile(string _fileName, string _text){
+	ofstream out;
+	out.open("uzip."+_fileName, ofstream::out);
+	char c[1];
+	for(int i = 0; i < _text.length(); i++){
+		c[0] = _text[i];
+		out.write(c, 1);
+	}
+	out.close();
+}
+
 void readCompressed(string _file){
 	ifstream in;
 	in.open(_file, ifstream::in | ifstream::binary);
@@ -448,6 +460,7 @@ void readCompressed(string _file){
 	cout << endl << endl << "(" << count << ")Read String: " << binary << endl << endl;
 	
 	//Read Magic Number 
+	int magicNumber = binaryToInt(binary.substr(0, 32), 32);
 			
 	cout << "Read Magic Number: " << binaryToInt(binary.substr(0, 32), 32) << endl;
 	index += 32;
@@ -467,9 +480,12 @@ void readCompressed(string _file){
 	cout << "Read File Name Mod Length: " << fnl << endl;
 	
 	//Read file name
+	string fileName = "";
+	string text = "";
 	cout << "Read File Name: ";
 	for(int i = 0; i < fnl; i++){
 		cout << (char) binaryToInt(binary.substr(index, 8), 8);
+		fileName += (char) binaryToInt(binary.substr(index, 8), 8);
 		index += 8;
 	}
 	cout << endl;
@@ -551,6 +567,7 @@ void readCompressed(string _file){
 								if(numOfMatch == codes[j].length() && !mismatch && codes[j].length() != 0){
 									//cout << "numOfMatch: " << numOfMatch << " = " << " codeLen[" << j << "]: " << codes[j].length() << " && mismatch: " << mismatch << " && codeLen[" << j << "]: " << codes[j].length() << " !=  0" << endl; 
 									cout << (char)j;
+									text += (char)j;
 									patCount = 0;
 									j = 128;
 									mismatch = false;
@@ -559,7 +576,20 @@ void readCompressed(string _file){
 							}
 						}
 					}
+	writeToFile(fileName, text);
 					
+}
+
+double compareFiles(string _original, string _compressed){
+	int originalSize;
+	int compressedSize;
+	ifstream in(_original, ifstream::ate | ifstream::binary);
+	originalSize =  in.tellg();
+	in.close();
+	in.open(_compressed, ifstream::ate | ifstream::binary);
+	compressedSize = in.tellg();
+	in.close();
+	return 100.00 * ((double) compressedSize / (double) originalSize);
 }
 	
 int main(int argc, char *argv[]){
@@ -577,5 +607,8 @@ int main(int argc, char *argv[]){
 	string filename(argv[1]);
 	filename += ".mcp";
 	readCompressed(filename);
+	cout.setf(ios::fixed);
+	cout.precision(2);
+	cout << endl << "Compression saved " << compareFiles(argv[1], filename) << "% storage space!" << endl;
 	return 0;
 }
