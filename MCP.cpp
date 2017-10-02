@@ -464,7 +464,7 @@ void readCompressed(string _file){
 		writeToFile(fileName, text);
 		
 		in.close();
-		
+		 
 		remove(_file.c_str());
 	}else{
 		//output error message to user
