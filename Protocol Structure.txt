@@ -6,7 +6,7 @@ file protocol (mpc)
 ? bytes - table
 	1 byte - ascii value
 	1 byte - # of bits
-	? bytes - each 1 or 0 stored as char as 8 bits
+	? bytes - code 
 4 bytes - length of encoded text
 ? bytes - encoded text
-1 byte - end of file marker (-1 ascii)
+1 byte - end of file marker (26 ascii)
